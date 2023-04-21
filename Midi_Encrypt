@@ -1,0 +1,92 @@
+import mido
+
+# Create a dictionary that maps letters to notes
+note_mapping = {
+    'a': 60,
+    'b': 62,
+    'c': 64,
+    'd': 65,
+    'e': 67,
+    'f': 69,
+    'g': 71,
+    'h': 72,
+    'i': 74,
+    'j': 76,
+    'k': 77,
+    'l': 79,
+    'm': 81,
+    'n': 83,
+    'o': 84,
+    'p': 86,
+    'q': 88,
+    'r': 89,
+    's': 91,
+    't': 93,
+    'u': 94,
+    'v': 96,
+    'w': 98,
+    'x': 100,
+    'y': 101,
+    'z': 103
+}
+
+def encrypt(text):
+    # Convert the text to lowercase
+    text = text.lower()
+
+    # Create a list to store the notes
+    notes = []
+
+    # Iterate through each character in the text
+    for char in text:
+        # If the character is a letter, add the corresponding note to the list
+        if char in note_mapping:
+            notes.append(note_mapping[char])
+
+    return notes
+
+def decrypt(notes):
+    # Create a list to store the decrypted text
+    text = []
+
+    # Iterate through each note in the list
+    for note in notes:
+        # Find the letter that corresponds to the note
+        for letter, n in note_mapping.items():
+            if n == note:
+                text.append(letter)
+                break
+
+    return ''.join(text)
+
+def create_midi(notes, filename):
+    # Create a MIDI pattern
+    pattern = mido.MidiFile()
+
+    # Create a MIDI track
+    track = mido.MidiTrack()
+    pattern.tracks.append(track)
+
+    # Set the tempo
+    tempo = mido.MetaMessage("set_tempo", tempo=mido.bpm2tempo(120))
+    track.append(tempo)
+
+    # Add each note to the track
+    for note in notes:
+        on = mido.Message("note_on", note=note, velocity=127, time=0)
+        track.append(on)
+        off = mido.Message("note_off", note=note, velocity=127, time=100)
+        track.append(off)
+
+    # Save the pattern to a MIDI file
+    pattern.save(filename)
+
+# Get the text to encrypt from the user
+text = input("Enter the text to encrypt: ")
+
+# Encrypt the text and create a MIDI file
+notes = encrypt(text)
+create_midi(notes, "encrypted.mid")
+
+# Decrypt the notes and print the decrypted text
+print(decrypt(notes))
